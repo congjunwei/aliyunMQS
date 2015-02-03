@@ -91,10 +91,10 @@ func (this *MQS) httpClient(verb, request_uri string, headers map[string]string,
 		request.Header.Set(k, v)
 	}
 	response, err := client.Do(request)
+	defer response.Body.Close()
 	if err != nil {
 		return "client请求失败", err
 	}
-	defer response.Body.Close()
 
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
@@ -104,7 +104,7 @@ func (this *MQS) httpClient(verb, request_uri string, headers map[string]string,
 	if response.StatusCode/100 > 1 && response.StatusCode/100 < 4 {
 		return string(content), nil
 	} else {
-		return string(content), errors.New("fail")
+		return string(content), errors.New(fmt.Sprintf("Code:%d,Content:%s", response.StatusCode, string(content)))
 	}
 }
 
