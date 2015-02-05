@@ -92,10 +92,10 @@ func (this *MQS) httpClient(verb, request_uri string, headers map[string]string,
 	}
 	response, err := client.Do(request)
 	defer response.Body.Close()
+	client = nil
 	if err != nil {
 		return "client请求失败", err
 	}
-
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return "获取response.Body失败", err
@@ -450,7 +450,7 @@ func (this *Message) ReceiveMessage(queuename string, waitseconds int) (string, 
 	}
 
 	request_uri := "http://" + this.QueueOwnId + "." + this.MqsUrl + CanonicalizedResource
-
+	//log.Printf(format, ...)
 	return this.httpClient(verb, request_uri, headers, string(content_body))
 }
 
@@ -463,7 +463,7 @@ func (this *Message) DeleteMessage(queuename, receipthandle string) (string, err
 	content_md5 := ""
 	content_type := this.ContentType
 	gmt_date := this.getGMTDate()
-	CanonicalizedResource := fmt.Sprintf("/%s/messages?ReceiptHandle=%d", queuename, receipthandle)
+	CanonicalizedResource := fmt.Sprintf("/%s/messages?ReceiptHandle=%s", queuename, receipthandle)
 	CanonicalizedMQSHeaders := map[string]string{"x-mqs-version": this.MqsHeaders}
 
 	sign := this.getSignature(verb, content_md5, content_type, gmt_date, CanonicalizedResource, CanonicalizedMQSHeaders)
